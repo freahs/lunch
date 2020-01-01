@@ -5,31 +5,32 @@ import (
 	"testing"
 )
 
+
 func TestDate(t *testing.T) {
 	type TCdate struct {
-		d1, d2   date
+		d1, d2   Date
 		expected []bool
 	}
 
 	tests := []TCdate{
-		{date{2019, 9, 16}, date{2019, 10, 16}, []bool{true, true, false, false, false}},
-		{date{2019, 10, 16}, date{2019, 10, 16}, []bool{false, true, true, true, false}},
-		{date{2019, 11, 16}, date{2019, 10, 16}, []bool{false, false, false, true, true}},
-		{date{2019, 10, 15}, date{2019, 10, 16}, []bool{true, true, false, false, false}},
-		{date{2019, 10, 17}, date{2019, 10, 16}, []bool{false, false, false, true, true}},
-		{date{2020, 1, 1}, date{2019, 10, 16}, []bool{false, false, false, true, true}},
-		{date{2018, 12, 32}, date{2019, 10, 16}, []bool{true, true, false, false, false}},
+		{Date{2019, 9, 16}, Date{2019, 10, 16}, []bool{true, false, false}},
+		{Date{2019, 10, 16}, Date{2019, 10, 16}, []bool{false, true, false}},
+		{Date{2019, 11, 16}, Date{2019, 10, 16}, []bool{false, false, true}},
+		{Date{2019, 10, 15}, Date{2019, 10, 16}, []bool{true, false, false}},
+		{Date{2019, 10, 17}, Date{2019, 10, 16}, []bool{false, false, true}},
+		{Date{2020, 1, 1}, Date{2019, 10, 16}, []bool{false, false, true}},
+		{Date{2018, 12, 32}, Date{2019, 10, 16}, []bool{true, false, false}},
 	}
 
 	for _, tc := range tests {
-		fnames := [5]string{"lt", "le", "eq", "ge", "gt"}
-		fn := [5]func(date) bool{tc.d1.lt, tc.d1.le, tc.d1.eq, tc.d1.ge, tc.d1.gt}
-		for i := 0; i < 5; i++ {
+		fnames := [3]string{"Before", "Equal", "After"}
+		fn := [3]func(Date) bool{tc.d1.Before, tc.d1.Equal, tc.d1.After}
+		for i := 0; i < 3; i++ {
 
-			name := fmt.Sprintf("date.%s", fnames[i])
+			name := fmt.Sprintf("Date.%s", fnames[i])
 			t.Run(name, func(t *testing.T) {
 				if res := fn[i](tc.d2); res != tc.expected[i] {
-					ops := [5]string{"<", "<=", "==", ">=", ">"}
+					ops := [3]string{"<", "==", ">"}
 					t.Errorf("%v %s %v: got %v, expected %v", tc.d1, ops[i], tc.d2, res, tc.expected[i])
 				}
 			})
@@ -38,44 +39,6 @@ func TestDate(t *testing.T) {
 	}
 }
 
-func TestMenu_less(t *testing.T) {
-	type fields struct {
-		r string
-		d date
-		i []string
-	}
-
-	other := &Menu{"B", date{2019, 10, 16}, []string{}}
-
-	tests := []struct {
-		fields fields
-		other  *Menu
-		want   bool
-	}{
-		{fields{"A", date{2019, 9, 16}, []string{}}, other, true},
-		{fields{"A", date{2019, 10, 16}, []string{}}, other, true},
-		{fields{"C", date{2019, 10, 16}, []string{}}, other, false},
-		{fields{"A", date{2019, 11, 16}, []string{}}, other, false},
-		{fields{"A", date{2019, 10, 15}, []string{}}, other, true},
-		{fields{"A", date{2019, 10, 17}, []string{}}, other, false},
-		{fields{"A", date{2020, 1, 1}, []string{}}, other, false},
-		{fields{"A", date{2018, 12, 32}, []string{}}, other, true},
-	}
-
-	for i, tt := range tests {
-		name := fmt.Sprintf("Menu.less() %d	", i)
-		t.Run(name, func(t *testing.T) {
-			m := Menu{
-				r: tt.fields.r,
-				d: tt.fields.d,
-				i: tt.fields.i,
-			}
-			if got := m.less(tt.other); got != tt.want {
-				t.Errorf("Menu.less() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestStore(t *testing.T) {
 
