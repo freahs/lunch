@@ -6,7 +6,6 @@ import (
 	"os"
 	"sort"
 	"sync"
-	//"io/ioutil"
 )
 
 type Filter int
@@ -117,7 +116,7 @@ func (m Menu) less(other *Menu) bool {
 	return m.r < other.r
 }
 
-// NewMenu reurns a new meny given the name of the restaurant, the date (as year, month and day)
+// NewMenu returns a new menu given the name of the restaurant, the date (as year, month and day)
 // and at least one menu item
 func NewMenu(restaurant string, year, month, day int, items ...string) Menu {
 	d := date{year, month, day}
