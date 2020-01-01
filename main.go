@@ -7,6 +7,8 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 )
 
 // HTTPError is an error with a status
@@ -34,8 +36,25 @@ func NewHTTPError(status int, err error) HTTPError {
 	return HTTPError{status, err}
 }
 
-func loadStore() *data.Store {
-	store, err := data.LoadStore("/home/fredrik/tmp/teststore.json")
+func loadStore(filename string) *data.Store {
+	dir := func() string {
+		if d, err := os.UserConfigDir(); err == nil {
+			d = filepath.Join(d, "lunch-server")
+			if err = os.MkdirAll(d, 0755); err == nil {
+				return d
+			}
+		}
+		return os.TempDir()
+	}()
+	path := filepath.Join(dir, filename)
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return data.NewStore()
+	}
+	if info.IsDir() {
+		log.Fatalf("%v is a directory", path)
+	}
+	store, err := data.LoadStore(path)
 	if err != nil {
 		log.Fatal(err)
 	}
