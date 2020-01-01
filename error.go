@@ -1,4 +1,4 @@
-package errors
+package lunch_server
 
 import (
 	"encoding/json"

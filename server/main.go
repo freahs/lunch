@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/freahs/lunch-server/data"
+	"github.com/freahs/lunch-server"
 	"github.com/freahs/lunch-server/loaders"
 	"github.com/gorilla/mux"
 	"log"
@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-func loadStore(filename string) *data.Store {
+func loadStore(filename string) *lunch_server.Store {
 	dir := func() string {
 		if d, err := os.UserConfigDir(); err == nil {
 			d = filepath.Join(d, "lunch-server")
@@ -23,12 +23,12 @@ func loadStore(filename string) *data.Store {
 	path := filepath.Join(dir, filename)
 	info, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		return data.NewStore()
+		return lunch_server.NewStore()
 	}
 	if info.IsDir() {
 		log.Fatalf("%v is a directory", path)
 	}
-	store, err := data.LoadStore(path)
+	store, err := lunch_server.LoadStore(path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func main() {
 		port = "8080"
 	}
 
-	store := data.NewStore()
+	store := lunch_server.NewStore()
 	prime := loaders.NewPrime()
 	err := prime.Load(store)
 	if err != nil {

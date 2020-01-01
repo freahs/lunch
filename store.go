@@ -1,4 +1,4 @@
-package data
+package lunch_server
 
 import (
 	"encoding/json"
@@ -6,6 +6,21 @@ import (
 	"os"
 	"sort"
 	"sync"
+)
+
+type Filter int
+
+const (
+	// FilterLt represents strictly Less than
+	FilterLt Filter = iota
+	// FilterLe represents Less than or equal
+	FilterLe
+	// FilterEq represents equal
+	FilterEq
+	// FilterGe represent greater than or equal
+	FilterGe
+	// FilterGt represents strictly greater than
+	FilterGt
 )
 
 // Store holds all menus for all restaurants. All operations are thread safe.

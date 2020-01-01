@@ -2,13 +2,13 @@ package loaders
 
 import (
 	"fmt"
+	"github.com/freahs/lunch-server"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/freahs/lunch-server/data"
 )
 
 // Prime implements the Loader interface and loads menus from an URL
@@ -39,7 +39,7 @@ func (p Prime) parseWeekString(s string) (int, error) {
 }
 
 // Load implements Loader
-func (p Prime) Load(store *data.Store) error {
+func (p Prime) Load(store *lunch_server.Store) error {
 	res, err := http.Get(p.URL)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (p Prime) Load(store *data.Store) error {
 					}
 					item := itemSelector.Find(".column-2").Text()
 					y, m, d := parseISOWeek(year, week, day).Date()
-					store.AddMenu(data.NewMenu("prime", y, int(m), d, item))
+					store.AddMenu(lunch_server.NewMenu("prime", y, int(m), d, item))
 				})
 			}
 		})

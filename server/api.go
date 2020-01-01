@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/freahs/lunch-server"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
-	"github.com/freahs/lunch-server/data"
 	"github.com/gorilla/mux"
 )
 
@@ -38,11 +38,11 @@ func WriteResponse(w http.ResponseWriter, status int, data interface{}) {
 }
 
 type APIServer struct {
-	store  *data.Store
+	store  *lunch_server.Store
 	router *mux.Router
 }
 
-func NewAPIServer(store *data.Store, router *mux.Router) APIServer {
+func NewAPIServer(store *lunch_server.Store, router *mux.Router) APIServer {
 	api := APIServer{store, router}
 	api.router.HandleFunc("/menu", api.createMenu).Methods("POST")
 	api.router.HandleFunc("/menu", api.allMenus).Methods("GET")
@@ -54,9 +54,9 @@ func (api APIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	api.router.ServeHTTP(w, r)
 }
 
-func (api APIServer) filterMenus(r *http.Request, store *data.Store) *data.Store {
+func (api APIServer) filterMenus(r *http.Request, store *lunch_server.Store) *lunch_server.Store {
 	query := r.URL.Query()
-	filters := []data.Filter{data.FilterLt, data.FilterLe, data.FilterEq, data.FilterGe, data.FilterGt}
+	filters := []lunch_server.Filter{lunch_server.FilterLt, lunch_server.FilterLe, lunch_server.FilterEq, lunch_server.FilterGe, lunch_server.FilterGt}
 	for i, filter := range []string{"lt", "le", "eq", "ge", "gt"} {
 		val := query.Get(filter)
 		if val == "" || len(val) != 8 {
@@ -80,7 +80,7 @@ func (api APIServer) filterMenus(r *http.Request, store *data.Store) *data.Store
 }
 
 func (api APIServer) createMenu(w http.ResponseWriter, r *http.Request) {
-	var menu data.Menu
+	var menu lunch_server.Menu
 	if err := UnmarshalRequestBody(r, &menu); err != nil {
 		WriteResponse(w, http.StatusUnprocessableEntity, err)
 		return

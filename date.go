@@ -1,4 +1,4 @@
-package data
+package lunch_server
 
 import (
 	"encoding/json"
