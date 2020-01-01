@@ -65,27 +65,30 @@ func (p Prime) Load(store *data.Store) error {
 		}
 	}()
 
-	doc.Find("h2").Each(func(i int, weekSelector *goquery.Selection) {
-		week, err := p.parseWeekString(weekSelector.Text())
-		if err != nil {
-			panic(err)
-		}
-		year, currentWeek := now.ISOWeek()
-		if week < currentWeek-20 {
-			year++
-		}
-		menuSelector := weekSelector.Parent().Find("tr")
-		if menuSelector.Length() == 5 {
-			menuSelector.Each(func(i int, itemSelector *goquery.Selection) {
-				day, err := dayFromString(itemSelector.Find(".column-1").Text())
-				if err != nil {
-					panic(err)
-				}
-				item := itemSelector.Find(".column-2").Text()
-				y, m, d := parseISOWeek(year, week, day).Date()
-				store.AddMenu(data.NewMenu("prime", y, int(m), d, item))
-			})
-		}
-	})
+	doc.Find("h2").Each(
+		func(i int, weekSelector *goquery.Selection) {
+			week, err := p.parseWeekString(weekSelector.Text())
+			if err != nil {
+				panic(err)
+			}
+			year, currentWeek := now.ISOWeek()
+			if week < currentWeek-20 {
+				year++
+			} else if week > currentWeek+20 {
+				year--
+			}
+			menuSelector := weekSelector.Parent().Find("tr")
+			if menuSelector.Length() == 5 {
+				menuSelector.Each(func(i int, itemSelector *goquery.Selection) {
+					day, err := dayFromString(itemSelector.Find(".column-1").Text())
+					if err != nil {
+						panic(err)
+					}
+					item := itemSelector.Find(".column-2").Text()
+					y, m, d := parseISOWeek(year, week, day).Date()
+					store.AddMenu(data.NewMenu("prime", y, int(m), d, item))
+				})
+			}
+		})
 	return err
 }
