@@ -124,7 +124,7 @@ func NewMenu(restaurant string, year, month, day int, items ...string) Menu {
 	return Menu{restaurant, d, i}
 }
 
-// MarshalJSON implements the Marshaler interface
+// MarshalJSON implements the Marshaller interface
 func (m Menu) MarshalJSON() ([]byte, error) {
 	type M struct {
 		R string   `json:"restaurant"`
@@ -134,7 +134,7 @@ func (m Menu) MarshalJSON() ([]byte, error) {
 	return json.Marshal(M{m.r, m.d, m.i})
 }
 
-// UnmarshalJSON implements the Unmarshaler interface
+// UnmarshalJSON implements the Unmarshaller interface
 func (m *Menu) UnmarshalJSON(bts []byte) error {
 	type M struct {
 		R string   `json:"restaurant"`
@@ -156,7 +156,7 @@ type Store struct {
 	*sync.RWMutex
 }
 
-// MarshalJSON implements the Marshaler interface
+// MarshalJSON implements the Marshaller interface
 func (s Store) MarshalJSON() ([]byte, error) {
 	s.RLock()
 	defer s.RUnlock()
@@ -167,7 +167,7 @@ func (s Store) MarshalJSON() ([]byte, error) {
 	return json.Marshal(S{s.menus})
 }
 
-// UnmarshalJSON implements the Unmarshaler interface
+// UnmarshalJSON implements the Unmarshaller interface
 func (s *Store) UnmarshalJSON(bts []byte) error {
 	s.Lock()
 	defer s.Unlock()
@@ -262,7 +262,7 @@ func (s *Store) FilterDate(f Filter, year, month, day int) *Store {
 	case FilterGt:
 		start = search(d2.lt)
 	default:
-		panic(fmt.Errorf("Illegal filter '%v'", f))
+		panic(fmt.Errorf("illegal filter '%v'", f))
 	}
 	return &Store{s.menus[start:stop], s.RWMutex}
 }

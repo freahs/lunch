@@ -11,7 +11,7 @@ import (
 	"github.com/freahs/lunch-server/data"
 )
 
-// Prime implements the Loader interface and loads menues from an URL
+// Prime implements the Loader interface and loads menus from an URL
 type Prime struct {
 	URL string
 }

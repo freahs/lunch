@@ -8,7 +8,7 @@ import (
 	"github.com/snabb/isoweek"
 )
 
-// dayFromString convers Swedish days to their corresponding time.Weekday
+// dayFromString converts Swedish days to their corresponding time.Weekday
 func dayFromString(s string) (time.Weekday, error) {
 	switch strings.ToLower(s) {
 	case "måndag":
