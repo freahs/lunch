@@ -63,6 +63,11 @@ func loadStore(filename string) *data.Store {
 
 func main() {
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	store := data.NewStore()
 	prime := loaders.NewPrime()
 	err := prime.Load(store)
@@ -72,6 +77,6 @@ func main() {
 	Router := mux.NewRouter().StrictSlash(true)
 	APIRouter := Router.PathPrefix("/api/v1").Subrouter()
 	api := NewAPIServer(store, APIRouter)
-
-	log.Fatal(http.ListenAndServe(":8080", api))
+	log.Printf("starting api server @ port %v", port)
+	log.Fatal(http.ListenAndServe(":"+port, api))
 }
