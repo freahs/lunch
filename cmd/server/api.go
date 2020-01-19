@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/freahs/lunch-server"
+	"github.com/freahs/lunch"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -38,11 +38,11 @@ func WriteResponse(w http.ResponseWriter, status int, data interface{}) {
 }
 
 type APIServer struct {
-	store  *lunch_server.Store
+	store  *lunch.Store
 	router *mux.Router
 }
 
-func NewAPIServer(store *lunch_server.Store, router *mux.Router) APIServer {
+func NewAPIServer(store *lunch.Store, router *mux.Router) APIServer {
 	api := APIServer{store, router}
 	api.router.HandleFunc("/menu", api.createMenu).Methods("POST")
 	api.router.HandleFunc("/menu", api.allMenus).Methods("GET")
@@ -54,9 +54,10 @@ func (api APIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	api.router.ServeHTTP(w, r)
 }
 
-func (api APIServer) filterMenus(r *http.Request, store *lunch_server.Store) *lunch_server.Store {
+func (api APIServer) filterMenus(r *http.Request, store *lunch.Store) *lunch.Store {
 	query := r.URL.Query()
-	filters := []lunch_server.Filter{lunch_server.FilterLt, lunch_server.FilterLe, lunch_server.FilterEq, lunch_server.FilterGe, lunch_server.FilterGt}
+	filters := []lunch.Filter{lunch.FilterLt, lunch.FilterLe, lunch.FilterEq, lunch.FilterGe, lunch.FilterGt}
+	filters := []lunch.Filter{lunch.FilterLt, lunch.FilterLe, lunch.FilterEq, lunch.FilterGe, lunch.FilterGt}
 	for i, filter := range []string{"lt", "le", "eq", "ge", "gt"} {
 		val := query.Get(filter)
 		if val == "" || len(val) != 8 {
@@ -74,13 +75,13 @@ func (api APIServer) filterMenus(r *http.Request, store *lunch_server.Store) *lu
 		if err != nil {
 			continue
 		}
-		store = store.FilterDate(filters[i], year, month, day)
+		store = store.FilterDate(filters[i], lunch.NewDate(year, month, day))
 	}
 	return store
 }
 
 func (api APIServer) createMenu(w http.ResponseWriter, r *http.Request) {
-	var menu lunch_server.Menu
+	var menu lunch.Menu
 	if err := UnmarshalRequestBody(r, &menu); err != nil {
 		WriteResponse(w, http.StatusUnprocessableEntity, err)
 		return

@@ -2,11 +2,17 @@ package loaders
 
 import (
 	"fmt"
+	"github.com/freahs/lunch"
 	"strings"
 	"time"
 
 	"github.com/snabb/isoweek"
 )
+
+type Loader interface {
+	Name() string
+	Load(store *lunch.Store) error
+}
 
 // dayFromString converts Swedish days to their corresponding time.Weekday
 func dayFromString(s string) (time.Weekday, error) {

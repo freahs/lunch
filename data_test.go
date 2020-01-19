@@ -1,4 +1,4 @@
-package lunch_server
+package lunch
 
 import (
 	"fmt"
@@ -13,13 +13,13 @@ func TestDate(t *testing.T) {
 	}
 
 	tests := []TCdate{
-		{Date{2019, 9, 16}, Date{2019, 10, 16}, []bool{true, false, false}},
-		{Date{2019, 10, 16}, Date{2019, 10, 16}, []bool{false, true, false}},
-		{Date{2019, 11, 16}, Date{2019, 10, 16}, []bool{false, false, true}},
-		{Date{2019, 10, 15}, Date{2019, 10, 16}, []bool{true, false, false}},
-		{Date{2019, 10, 17}, Date{2019, 10, 16}, []bool{false, false, true}},
-		{Date{2020, 1, 1}, Date{2019, 10, 16}, []bool{false, false, true}},
-		{Date{2018, 12, 32}, Date{2019, 10, 16}, []bool{true, false, false}},
+		{NewDate(2019, 9, 16), NewDate(2019, 10, 16), []bool{true, false, false}},
+		{NewDate(2019, 10, 16), NewDate(2019, 10, 16), []bool{false, true, false}},
+		{NewDate(2019, 11, 16), NewDate(2019, 10, 16), []bool{false, false, true}},
+		{NewDate(2019, 10, 15), NewDate(2019, 10, 16), []bool{true, false, false}},
+		{NewDate(2019, 10, 17), NewDate(2019, 10, 16), []bool{false, false, true}},
+		{NewDate(2020, 1, 1), NewDate(2019, 10, 16), []bool{false, false, true}},
+		{NewDate(2018, 12, 32), NewDate(2019, 10, 16), []bool{true, false, false}},
 	}
 
 	for _, tc := range tests {
@@ -79,10 +79,10 @@ func TestStore(t *testing.T) {
 	})
 
 	t.Run("Ensure filter works as expected", func(t *testing.T) {
-		checkNames(s.FilterDate(FilterLt, 2019, 10, 17), "a", "b", "c")
-		checkNames(s.FilterDate(FilterLe, 2019, 10, 17), "a", "b", "c", "d", "e", "f")
-		checkNames(s.FilterDate(FilterEq, 2019, 10, 17), "d", "e", "f")
-		checkNames(s.FilterDate(FilterGe, 2019, 10, 17), "d", "e", "f", "g", "h", "i")
-		checkNames(s.FilterDate(FilterGt, 2019, 10, 17), "g", "h", "i")
+		checkNames(s.FilterDate(FilterLt, NewDate(2019, 10, 17)), "a", "b", "c")
+		checkNames(s.FilterDate(FilterLe, NewDate(2019, 10, 17)), "a", "b", "c", "d", "e", "f")
+		checkNames(s.FilterDate(FilterEq, NewDate(2019, 10, 17)), "d", "e", "f")
+		checkNames(s.FilterDate(FilterGe, NewDate(2019, 10, 17)), "d", "e", "f", "g", "h", "i")
+		checkNames(s.FilterDate(FilterGt, NewDate(2019, 10, 17)), "g", "h", "i")
 	})
 }

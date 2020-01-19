@@ -1,86 +1,86 @@
-package lunch_server
+package lunch
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/snabb/isoweek"
+	"time"
 )
 
 type Date struct {
-	y, m, d int
+	t time.Time
+}
+
+func Now() Date {
+	now := time.Now()
+	return Date{time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)}
+}
+
+func Week(year, week int) Date {
+	y, m, d := isoweek.StartDate(year, week)
+	return Date{time.Date(y, m, d, 0, 0, 0, 0, time.Local)}
 }
 
 func NewDate(year, month, day int) Date {
-	return Date{year, month, day}
+	return Date{time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.Local)}
 }
 
 func (d Date) Year() int {
-	return d.y
+	return d.t.Year()
 }
 
 func (d Date) Month() int {
-	return d.m
+	return int(d.t.Month())
 }
 
 func (d Date) Day() int {
-	return d.d
+	return d.t.Day()
+}
+
+func (d Date) Week() (year, week int) {
+	return d.t.ISOWeek()
+}
+
+func (d Date) Weekday() string {
+	return d.t.Weekday().String()
 }
 
 func (d Date) Before(other Date) bool {
-	if d.Year() < other.Year() {
-		return true
-	}
-	if d.Year() > other.Year() {
-		return false
-	}
-	if d.Month() < other.Month() {
-		return true
-	}
-	if d.Month() > other.Month() {
-		return false
-	}
-	return d.Day() < other.Day()
+	return d.t.Before(other.t)
 }
 
 func (d Date) Equal(other Date) bool {
-	if d.Year() != other.Year() {
-		return false
-	}
-	if d.Month() != other.Month() {
-		return false
-	}
-	return d.Day() == other.Day()
+	return d.t.Equal(other.t)
 }
 
 func (d Date) After(other Date) bool {
 	return other.Before(d)
 }
 
+func (d Date) Sub(other Date) time.Duration {
+	return d.t.Sub(other.t)
+}
+
+func (d Date) Add(years, months, days int) Date {
+	return Date{d.t.AddDate(years, months, days)}
+}
+
 func (d Date) String() string {
-	return fmt.Sprintf("%4d%2d%2d", d.y, d.m, d.d)
+	return d.t.Format("Mon 2006-01-02")
 }
 
 // MarshalJSON implements the Marshaller interface
 func (d Date) MarshalJSON() ([]byte, error) {
-	type D struct {
-		Y int `json:"year"`
-		M int `json:"month"`
-		D int `json:"day"`
-	}
-	return json.Marshal(D{d.y, d.m, d.d})
+	s := d.t.Format("20060102")
+	return json.Marshal(s)
 }
 
 // UnmarshalJSON implements the Unmarshaller interface
 func (d *Date) UnmarshalJSON(bts []byte) error {
-	type D struct {
-		Y int `json:"year"`
-		M int `json:"month"`
-		D int `json:"day"`
-	}
-	var tmp D
-	err := json.Unmarshal(bts, &tmp)
+	var s string
+	err := json.Unmarshal(bts, &s)
 	if err != nil {
 		return err
 	}
-	d.y, d.m, d.d = tmp.Y, tmp.M, tmp.D
-	return nil
+	d.t, err = time.Parse("20060102", s)
+	return err
 }

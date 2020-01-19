@@ -1,4 +1,4 @@
-package lunch_server
+package lunch
 
 import (
 	"encoding/json"
@@ -25,7 +25,7 @@ const (
 
 // Store holds all menus for all restaurants. All operations are thread safe.
 type Store struct {
-	menus []Menu
+	menus []*Menu
 	*sync.RWMutex
 }
 
@@ -34,10 +34,9 @@ func (s Store) MarshalJSON() ([]byte, error) {
 	s.RLock()
 	defer s.RUnlock()
 
-	type S struct {
-		M []Menu `json:"menus"`
-	}
-	return json.Marshal(S{s.menus})
+	return json.Marshal(struct {
+		M []*Menu `json:"menus"`
+	}{s.menus})
 }
 
 // UnmarshalJSON implements the Unmarshaller interface
@@ -45,27 +44,21 @@ func (s *Store) UnmarshalJSON(bts []byte) error {
 	s.Lock()
 	defer s.Unlock()
 
-	type S struct {
-		M []Menu `json:"menus"`
+	var tmp struct {
+		M []*Menu `json:"menus"`
 	}
-	var tmp S
 	err := json.Unmarshal(bts, &tmp)
 	if err != nil {
 		return err
 	}
-	s.menus = make([]Menu, 0, len(tmp.M))
+	s.menus = make([]*Menu, 0, len(tmp.M))
 	for _, m := range tmp.M {
-		s.AddMenu(m)
+		s.AddMenu(*m)
 	}
 	return nil
 }
 
-// NewStore returns a new, empty, store.go.
-func NewStore() *Store {
-	return &Store{[]Menu{}, &sync.RWMutex{}}
-}
-
-// AddMenu adds a menu to the store.go
+// AddMenu adds a Menu to the store.go
 func (s *Store) AddMenu(menu Menu) {
 	s.Lock()
 	defer s.Unlock()
@@ -79,7 +72,7 @@ func (s *Store) AddMenu(menu Menu) {
 	})
 	s.menus = append(s.menus, nil)
 	copy(s.menus[i+1:], s.menus[i:])
-	s.menus[i] = menu
+	s.menus[i] = &menu
 }
 
 // Menus returns the menus in the store.go. Note that values (i.e. copies) are returned, not pointers.
@@ -89,7 +82,7 @@ func (s *Store) Menus() []Menu {
 
 	res := make([]Menu, len(s.menus))
 	for i, m := range s.menus {
-		res[i] = m
+		res[i] = *m
 	}
 
 	return res
@@ -100,7 +93,7 @@ func (s *Store) FilterName(name string) *Store {
 	s.RLock()
 	defer s.RUnlock()
 
-	menus := make([]Menu, 0, len(s.menus))
+	menus := make([]*Menu, 0, len(s.menus))
 	for _, m := range s.menus {
 		if m.Restaurant() == name {
 			menus = append(menus, m)
@@ -110,27 +103,26 @@ func (s *Store) FilterName(name string) *Store {
 }
 
 // FilterDate filters
-func (s *Store) FilterDate(f Filter, year, month, day int) *Store {
+func (s *Store) FilterDate(f Filter, date Date) *Store {
 	s.RLock()
 	defer s.RUnlock()
 
-	d2 := NewDate(year, month, day)
 	start, stop := 0, len(s.menus)
 
 	cmpLT := func(i int) bool {
 		d1 := s.menus[i].Date()
-		return d2.Before(d1)
+		return date.Before(d1)
 	}
 	cmpLE := func(i int) bool {
 		d1 := s.menus[i].Date()
-		return d2.Equal(d1) || d2.Before(d1)
+		return date.Equal(d1) || date.Before(d1)
 	}
 
 	// Want function f for which f(i)=1 => f(i+1)=1. Search will return the lowest index i for
 	// which f holds. Using Search to find a start and stop index...
 	switch f {
 	case FilterLt:
-		//     the lowest index i for which d2 <= menus[i] is true
+		//     the lowest index i for which date <= menus[i] is true
 		stop = sort.Search(len(s.menus), cmpLE)
 	case FilterLe:
 		stop = sort.Search(len(s.menus), cmpLT)
@@ -148,10 +140,10 @@ func (s *Store) FilterDate(f Filter, year, month, day int) *Store {
 }
 
 // Save saves the storage to disk
-func (s *Store) Save(filename string) error {
+func (s *Store) Save(path string) error {
 	s.RLock()
 	defer s.RUnlock()
-	f, err := os.Create(filename)
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
@@ -164,18 +156,30 @@ func (s *Store) Save(filename string) error {
 	return nil
 }
 
-// LoadStore loads a store.go saved to disk
-func LoadStore(filename string) (*Store, error) {
-	f, err := os.Open(filename)
+func (s *Store) Size() int {
+	return len(s.menus)
+}
+
+// NewStore returns a new, empty, store.go.
+func NewStore() *Store {
+	return &Store{[]*Menu{}, &sync.RWMutex{}}
+}
+
+func LoadStore(path string) (*Store, error) {
+	store := NewStore()
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 	decoder := json.NewDecoder(f)
-	store := NewStore()
+
 	err = decoder.Decode(store)
 	if err != nil {
 		return nil, err
 	}
+
 	return store, nil
 }
+
+
